@@ -92,6 +92,7 @@ A tool that monitors release notes for major data engineering platforms and deli
 | Concern | Recommendation | Rationale |
 |---|---|---|
 | Language | Python 3.11+ | User familiarity, rich ecosystem for scraping + LLM + automation |
+| Package manager | `uv` | Fast, modern Python package and project manager; replaces pip + venv |
 | Scraping | `httpx` + `BeautifulSoup4` | Lightweight, async-capable, well-supported |
 | LLM | Anthropic Claude API (`claude-sonnet-4-6`) | Best-in-class summarisation, consistent structured output, prompt caching reduces cost on repeated runs |
 | Local storage | JSON files (one per platform) | Simple, human-readable, easy to inspect and debug; straightforward migration to SQLite in v2 |
@@ -138,7 +139,7 @@ feature-release-tracker/
 ├── config.yaml                  # Non-secret configuration
 ├── .env                         # API keys and webhook URL (gitignored)
 ├── .env.example                 # Template for .env
-├── requirements.txt
+├── pyproject.toml               # uv project definition and dependencies
 ├── main.py                      # Entry point — run manually or via scheduler
 ├── src/
 │   ├── scrapers/
@@ -166,7 +167,7 @@ feature-release-tracker/
 ## 8. Build Plan — Phased Approach
 
 ### Phase 1 — Foundation (Week 1)
-- [ ] Set up project structure and virtual environment
+- [ ] Set up project structure with `uv init` and configure `pyproject.toml`
 - [ ] Implement `config.py` — load `config.yaml` and `.env`
 - [ ] Implement `storage.py` — JSON read/write, deduplication logic
 - [ ] Write abstract `BaseScraper` class with shared interface
