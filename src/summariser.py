@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import logging
+import time
 from pathlib import Path
 from typing import Any
 
 from google import genai
 from google.genai import types
+from google.genai.errors import ServerError
 from pydantic import BaseModel
 
 from src.config import AppConfig
@@ -43,15 +45,7 @@ def summarise_platform_releases(
     client = genai.Client(api_key=config.gemini_api_key)
     user_content = _build_user_message(platform_name, releases, config.summary.max_words_per_platform)
 
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=user_content,
-        config=types.GenerateContentConfig(
-            system_instruction=_load_system_prompt(),
-            response_mime_type="application/json",
-            response_schema=ReleaseSummary,
-        ),
-    )
+    response = _generate_with_retry(client, user_content)
 
     usage = response.usage_metadata
     logger.info(
@@ -62,6 +56,28 @@ def summarise_platform_releases(
     )
 
     return ReleaseSummary.model_validate_json(response.text)
+
+
+def _generate_with_retry(client: genai.Client, user_content: str, max_attempts: int = 4) -> Any:
+    """Call the Gemini API with simple exponential backoff on 503 errors."""
+    delay = 15
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return client.models.generate_content(
+                model=MODEL,
+                contents=user_content,
+                config=types.GenerateContentConfig(
+                    system_instruction=_load_system_prompt(),
+                    response_mime_type="application/json",
+                    response_schema=ReleaseSummary,
+                ),
+            )
+        except ServerError as e:
+            if attempt == max_attempts:
+                raise
+            logger.warning("Gemini 503 (attempt %d/%d) — retrying in %ds", attempt, max_attempts, delay)
+            time.sleep(delay)
+            delay *= 2
 
 
 def _build_user_message(

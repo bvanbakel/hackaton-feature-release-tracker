@@ -183,16 +183,16 @@ feature-release-tracker/
 - [x] Validate summary quality and consistency across platforms
 
 ### Phase 4 — Delivery (Week 2–3)
-- [ ] Set up Google Chat channel and incoming webhook
-- [ ] Implement `delivery.py` — format and POST the weekly digest
-- [ ] Handle edge cases: no new releases, API failures, webhook errors
+- [x] Set up Google Chat channel and incoming webhook
+- [x] Implement `delivery.py` — format and POST the weekly digest
+- [x] Handle edge cases: no new releases, API failures, webhook errors
 
 ### Phase 5 — Scheduling & Polish (Week 3)
-- [ ] Implement `scheduler.py` — Monday morning cron trigger
-- [ ] Wire up `main.py` as the single entry point
-- [ ] Add basic logging throughout
-- [ ] Write `.env.example` and setup instructions in README
-- [ ] End-to-end test run
+- [x] Implement `scheduler.py` — Monday morning cron trigger
+- [x] Wire up `main.py` as the single entry point
+- [x] Add basic logging throughout
+- [x] Write `.env.example` and setup instructions in README
+- [x] End-to-end test run
 
 ---
 
