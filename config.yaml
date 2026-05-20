@@ -1,0 +1,24 @@
+platforms:
+  databricks:
+    enabled: true
+    url: "https://docs.databricks.com/release-notes/"
+  fabric:
+    enabled: true
+    url: "https://learn.microsoft.com/en-us/fabric/release-plan/"
+  snowflake:
+    enabled: true
+    url: "https://docs.snowflake.com/en/release-notes/"
+  bigquery:
+    enabled: true
+    url: "https://cloud.google.com/bigquery/docs/release-notes"
+
+schedule:
+  cron: "0 8 * * 1"   # Every Monday at 08:00
+  timezone: "Europe/Amsterdam"
+
+backfill:
+  start_date: "2026-05-01"
+
+summary:
+  max_words_per_platform: 200
+  language: "English"
