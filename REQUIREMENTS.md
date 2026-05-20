@@ -30,14 +30,9 @@ A tool that monitors release notes for major data engineering platforms and deli
 - Support configurable scraping schedules (default: weekly, Monday morning)
 - Deduplicate releases to avoid reprocessing already-seen entries
 - Store raw release data locally in JSON format (one file per platform)
+- On each run, only collect releases published since the last run date
 
-### 3.2 Backfill (one-time, on first run)
-- Collect all releases published from **May 1, 2026** up to the current date
-- This produces the "as-is" baseline of what has changed since the start of May 2026
-- The backfill period (May 1 to today) is posted as **3 separate digests** (one per week of data) in a single first run — all 3 posts are delivered at once since the data is already historical
-- After the backfill is complete, only new releases (post last-run date) are collected and posted on the regular weekly schedule
-
-### 3.3 AI Summarisation
+### 3.2 AI Summarisation
 - Use the **Anthropic Claude API** (recommended: `claude-sonnet-4-6`) to generate summaries
 - Each platform gets its own structured summary per weekly digest
 - Summary format per platform:
@@ -62,18 +57,17 @@ A tool that monitors release notes for major data engineering platforms and deli
 - Highly technical low-level details (e.g., internal API changes, patch-level bug fixes) should be filtered or deprioritised
 - Client relevance framing covers a mix of: migrations, architecture decisions, cost optimisation, and new capability adoption
 
-### 3.4 Delivery
+### 3.3 Delivery
 - Post the weekly digest to a **Google Chat channel** via incoming webhook
 - Message format: one structured card per platform, grouped in a single weekly post
 - Schedule: **every Monday morning** (configurable via config file)
 - If no new releases are found for a platform, note that explicitly rather than skipping the platform
 - On **scraping or API failures**, post a notification to the Google Chat channel indicating which platform failed (e.g., "Failed to fetch Snowflake releases this week") so the team is aware without needing to check local logs
 
-### 3.5 Configuration
+### 3.4 Configuration
 - All configurable values live in a single `config.yaml` file:
   - Platforms to track (enable/disable per platform)
   - Scrape schedule (cron expression or simple interval)
-  - Backfill start date
   - Google Chat webhook URL
   - Anthropic API key reference (loaded from `.env`, not hardcoded)
   - Summary language (default: English)
@@ -170,10 +164,10 @@ feature-release-tracker/
 ## 8. Build Plan — Phased Approach
 
 ### Phase 1 — Foundation (Week 1)
-- [ ] Set up project structure with `uv init` and configure `pyproject.toml`
-- [ ] Implement `config.py` — load `config.yaml` and `.env`
-- [ ] Implement `storage.py` — JSON read/write, deduplication logic
-- [ ] Write abstract `BaseScraper` class with shared interface
+- [x] Set up project structure with `uv init` and configure `pyproject.toml`
+- [x] Implement `config.py` — load `config.yaml` and `.env`
+- [x] Implement `storage.py` — JSON read/write, deduplication logic
+- [x] Write abstract `BaseScraper` class with shared interface
 
 ### Phase 2 — Scrapers (Week 1–2)
 - [ ] Implement Databricks scraper
@@ -181,7 +175,6 @@ feature-release-tracker/
 - [ ] Implement BigQuery scraper
 - [ ] Implement Microsoft Fabric scraper
 - [ ] Test each scraper independently, validate raw output
-- [ ] Implement backfill logic (filter by date >= 2026-05-01, split into 3 weekly chunks)
 
 ### Phase 3 — Summarisation (Week 2)
 - [ ] Write and iterate on the Claude system prompt (`prompts/summarise.txt`)
@@ -220,6 +213,6 @@ feature-release-tracker/
 | # | Question | Current Decision |
 |---|---|---|
 | 1 | Which Monday time exactly? | 08:00 Amsterdam time (CEST, UTC+2) |
-| 2 | Backfill delivery strategy | Post all 3 weekly chunks at once on first run (historical data, no flooding concern) |
+| 2 | Backfill / as-is comparison? | Removed — tool delivers weekly summaries of new releases only, starting from the first run |
 | 3 | Max summary length per platform? | ~200 words per platform per digest |
 | 4 | What happens if a platform's page structure changes and scraping breaks? | Log error, skip platform, still post digest with a note |

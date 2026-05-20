@@ -42,14 +42,16 @@ main.py         — entry point
 | `.env` | `ANTHROPIC_API_KEY`, `GOOGLE_CHAT_WEBHOOK_URL` |
 | `.env.example` | Template committed to git |
 
-Backfill date: 2026-05-01. First run produces 3 weekly digest chunks, all posted at once.
-
 ## Key Constraints
 
 - **Idempotent**: re-running must never post duplicate messages or reprocess seen releases
 - **Prompt caching**: summariser must use Anthropic prompt caching (system prompt as cached block)
 - **Error handling**: if a platform scraper or API call fails, skip that platform and post a failure note — do not abort the full run
 - **Storage v1**: JSON files; logic layer must stay storage-agnostic for a future SQLite migration
+
+## Tracking Progress
+
+Whenever a phase item is completed, update the corresponding checkbox in the `REQUIREMENTS.md` build plan (Section 8) from `- [ ]` to `- [x]`. Do this as part of the same work — don't leave `REQUIREMENTS.md` out of sync with what has actually been built.
 
 ## Tech Stack
 

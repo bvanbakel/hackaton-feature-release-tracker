@@ -16,9 +16,6 @@ schedule:
   cron: "0 8 * * 1"   # Every Monday at 08:00
   timezone: "Europe/Amsterdam"
 
-backfill:
-  start_date: "2026-05-01"
-
 summary:
   max_words_per_platform: 200
   language: "English"

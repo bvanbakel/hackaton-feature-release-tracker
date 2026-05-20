@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
@@ -24,11 +24,6 @@ class ScheduleConfig:
 
 
 @dataclass
-class BackfillConfig:
-    start_date: str  # ISO date string, e.g. "2026-05-01"
-
-
-@dataclass
 class SummaryConfig:
     max_words_per_platform: int
     language: str
@@ -38,7 +33,6 @@ class SummaryConfig:
 class AppConfig:
     platforms: dict[str, PlatformConfig]
     schedule: ScheduleConfig
-    backfill: BackfillConfig
     summary: SummaryConfig
     anthropic_api_key: str
     google_chat_webhook_url: str
@@ -65,7 +59,6 @@ def load_config(config_path: Path | None = None, env_path: Path | None = None) -
     return AppConfig(
         platforms=platforms,
         schedule=ScheduleConfig(**raw["schedule"]),
-        backfill=BackfillConfig(**raw["backfill"]),
         summary=SummaryConfig(**raw["summary"]),
         anthropic_api_key=anthropic_api_key,
         google_chat_webhook_url=webhook_url,
