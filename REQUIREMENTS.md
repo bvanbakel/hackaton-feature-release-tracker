@@ -15,7 +15,7 @@ A tool that monitors release notes for major data engineering platforms and deli
 | Platform | Release Notes Source |
 |---|---|
 | Databricks | https://docs.databricks.com/release-notes/ |
-| Microsoft Fabric | https://learn.microsoft.com/en-us/fabric/release-plan/ |
+| Microsoft Fabric | https://learn.microsoft.com/en-us/fabric/fundamentals/whats-new |
 | Snowflake | https://docs.snowflake.com/en/release-notes/ |
 | BigQuery | https://cloud.google.com/bigquery/docs/release-notes |
 
@@ -170,11 +170,11 @@ feature-release-tracker/
 - [x] Write abstract `BaseScraper` class with shared interface
 
 ### Phase 2 — Scrapers (Week 1–2)
-- [ ] Implement Databricks scraper
-- [ ] Implement Snowflake scraper
-- [ ] Implement BigQuery scraper
-- [ ] Implement Microsoft Fabric scraper
-- [ ] Test each scraper independently, validate raw output
+- [x] Implement Databricks scraper (RSS feed — 716 entries)
+- [x] Implement Snowflake scraper (HTML — 4 most recent releases on index)
+- [x] Implement BigQuery scraper (Atom feed — 30 entries)
+- [x] Implement Microsoft Fabric scraper (HTML — GA features grouped by month)
+- [x] Test each scraper independently, validate raw output
 
 ### Phase 3 — Summarisation (Week 2)
 - [ ] Write and iterate on the Claude system prompt (`prompts/summarise.txt`)

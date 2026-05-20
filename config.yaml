@@ -4,7 +4,7 @@ platforms:
     url: "https://docs.databricks.com/release-notes/"
   fabric:
     enabled: true
-    url: "https://learn.microsoft.com/en-us/fabric/release-plan/"
+    url: "https://learn.microsoft.com/en-us/fabric/fundamentals/whats-new"
   snowflake:
     enabled: true
     url: "https://docs.snowflake.com/en/release-notes/"
