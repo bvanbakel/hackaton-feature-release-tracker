@@ -177,10 +177,10 @@ feature-release-tracker/
 - [x] Test each scraper independently, validate raw output
 
 ### Phase 3 — Summarisation (Week 2)
-- [ ] Write and iterate on the Claude system prompt (`prompts/summarise.txt`)
-- [ ] Implement `summariser.py` with structured output parsing
-- [ ] Enable prompt caching for cost efficiency on repeated summarisation runs
-- [ ] Validate summary quality and consistency across platforms
+- [x] Write and iterate on the Claude system prompt (`prompts/summarise.txt`)
+- [x] Implement `summariser.py` with structured output parsing
+- [x] Enable prompt caching for cost efficiency on repeated summarisation runs
+- [ ] Validate summary quality and consistency across platforms (requires API key)
 
 ### Phase 4 — Delivery (Week 2–3)
 - [ ] Set up Google Chat channel and incoming webhook
