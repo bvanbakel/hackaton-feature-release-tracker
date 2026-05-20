@@ -19,6 +19,8 @@ A tool that monitors release notes for major data engineering platforms and deli
 | Snowflake | https://docs.snowflake.com/en/release-notes/ |
 | BigQuery | https://cloud.google.com/bigquery/docs/release-notes |
 
+> **Risk: JS-rendered pages.** Some of these release notes pages may be JavaScript-rendered SPAs that don't return useful HTML server-side. During Phase 2, each scraper must be validated against the actual page response. If a platform requires JS rendering, the scraper should use `playwright` (headless browser) instead of `httpx` + `BeautifulSoup`. Similarly, if a platform offers an RSS feed or public API for release notes, prefer that over scraping for reliability. This should be evaluated per platform during build time.
+
 ---
 
 ## 3. Functional Requirements
@@ -32,7 +34,7 @@ A tool that monitors release notes for major data engineering platforms and deli
 ### 3.2 Backfill (one-time, on first run)
 - Collect all releases published from **May 1, 2026** up to the current date
 - This produces the "as-is" baseline of what has changed since the start of May 2026
-- The backfill period (May 1 to today) is split into **3 weekly chunks** and delivered as 3 separate catch-up posts to Google Chat — one per Monday after the first run — to avoid flooding the channel
+- The backfill period (May 1 to today) is posted as **3 separate digests** (one per week of data) in a single first run — all 3 posts are delivered at once since the data is already historical
 - After the backfill is complete, only new releases (post last-run date) are collected and posted on the regular weekly schedule
 
 ### 3.3 AI Summarisation
@@ -65,6 +67,7 @@ A tool that monitors release notes for major data engineering platforms and deli
 - Message format: one structured card per platform, grouped in a single weekly post
 - Schedule: **every Monday morning** (configurable via config file)
 - If no new releases are found for a platform, note that explicitly rather than skipping the platform
+- On **scraping or API failures**, post a notification to the Google Chat channel indicating which platform failed (e.g., "Failed to fetch Snowflake releases this week") so the team is aware without needing to check local logs
 
 ### 3.5 Configuration
 - All configurable values live in a single `config.yaml` file:
@@ -73,7 +76,7 @@ A tool that monitors release notes for major data engineering platforms and deli
   - Backfill start date
   - Google Chat webhook URL
   - Anthropic API key reference (loaded from `.env`, not hardcoded)
-  - Summary language and tone preferences
+  - Summary language (default: English)
 
 ---
 
@@ -212,11 +215,11 @@ feature-release-tracker/
 
 ---
 
-## 10. Open Questions / Decisions to Revisit
+## 10. Decision Log
 
 | # | Question | Current Decision |
 |---|---|---|
 | 1 | Which Monday time exactly? | 08:00 Amsterdam time (CEST, UTC+2) |
-| 2 | Backfill delivery strategy | Split into 3 weekly catch-up posts (one per Monday after first run) |
+| 2 | Backfill delivery strategy | Post all 3 weekly chunks at once on first run (historical data, no flooding concern) |
 | 3 | Max summary length per platform? | ~200 words per platform per digest |
 | 4 | What happens if a platform's page structure changes and scraping breaks? | Log error, skip platform, still post digest with a note |
