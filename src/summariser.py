@@ -4,7 +4,8 @@ import logging
 from pathlib import Path
 from typing import Any
 
-import anthropic
+from google import genai
+from google.genai import types
 from pydantic import BaseModel
 
 from src.config import AppConfig
@@ -12,7 +13,7 @@ from src.config import AppConfig
 logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).parent.parent
-MODEL = "claude-sonnet-4-6"
+MODEL = "gemini-2.5-flash"
 
 
 class ReleaseSummary(BaseModel):
@@ -34,39 +35,33 @@ def summarise_platform_releases(
     """Summarise all new releases for a platform into one weekly digest.
 
     Returns None if the release list is empty.
-    Raises anthropic.APIError on API failure (caller should handle and skip platform).
+    Raises google.genai exceptions on API failure.
     """
     if not releases:
         return None
 
-    client = anthropic.Anthropic(api_key=config.anthropic_api_key)
-    system_prompt = _load_system_prompt()
+    client = genai.Client(api_key=config.gemini_api_key)
     user_content = _build_user_message(platform_name, releases, config.summary.max_words_per_platform)
 
-    response = client.messages.parse(
+    response = client.models.generate_content(
         model=MODEL,
-        max_tokens=2048,
-        system=[{
-            "type": "text",
-            "text": system_prompt,
-            # Prompt caching: system prompt is stable across all platforms and runs.
-            # Cache write cost is offset after ~2 requests per cache TTL window.
-            "cache_control": {"type": "ephemeral"},
-        }],
-        messages=[{"role": "user", "content": user_content}],
-        output_format=ReleaseSummary,
+        contents=user_content,
+        config=types.GenerateContentConfig(
+            system_instruction=_load_system_prompt(),
+            response_mime_type="application/json",
+            response_schema=ReleaseSummary,
+        ),
     )
 
+    usage = response.usage_metadata
     logger.info(
-        "%s — tokens: %d input (%d cached, %d new), %d output",
+        "%s — tokens: %d input, %d output",
         platform_name,
-        response.usage.input_tokens + response.usage.cache_read_input_tokens,
-        response.usage.cache_read_input_tokens,
-        response.usage.input_tokens,
-        response.usage.output_tokens,
+        usage.prompt_token_count,
+        usage.candidates_token_count,
     )
 
-    return response.parsed_output
+    return ReleaseSummary.model_validate_json(response.text)
 
 
 def _build_user_message(
@@ -84,7 +79,6 @@ def _build_user_message(
 
     for release in releases:
         lines.append(f"### {release['title']} ({release['date']})")
-        # Cap individual release content to avoid blowing the context window
         content = release.get("raw_content", "").strip()
         if len(content) > 4000:
             content = content[:4000] + "\n[...truncated]"

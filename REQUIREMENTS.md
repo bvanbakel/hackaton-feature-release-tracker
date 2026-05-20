@@ -91,7 +91,7 @@ A tool that monitors release notes for major data engineering platforms and deli
 | Language | Python 3.11+ | User familiarity, rich ecosystem for scraping + LLM + automation |
 | Package manager | `uv` | Fast, modern Python package and project manager; replaces pip + venv |
 | Scraping | `httpx` + `BeautifulSoup4` | Lightweight, async-capable, well-supported |
-| LLM | Anthropic Claude API (`claude-sonnet-4-6`) | Best-in-class summarisation, consistent structured output, prompt caching reduces cost on repeated runs |
+| LLM | Google Gemini API (`gemini-2.5-flash`) | Free tier, no credit card required, structured JSON output, sufficient quality for release summarisation |
 | Local storage | JSON files (one per platform) | Simple, human-readable, easy to inspect and debug; straightforward migration to SQLite in v2 |
 | Scheduling | `APScheduler` or system cron | APScheduler keeps everything in one Python process; cron is simpler for local use |
 | Config | `python-dotenv` + `PyYAML` | Secrets in `.env`, non-secret config in `config.yaml` |
@@ -180,7 +180,7 @@ feature-release-tracker/
 - [x] Write and iterate on the Claude system prompt (`prompts/summarise.txt`)
 - [x] Implement `summariser.py` with structured output parsing
 - [x] Enable prompt caching for cost efficiency on repeated summarisation runs
-- [ ] Validate summary quality and consistency across platforms (requires API key)
+- [x] Validate summary quality and consistency across platforms
 
 ### Phase 4 — Delivery (Week 2–3)
 - [ ] Set up Google Chat channel and incoming webhook
