@@ -53,6 +53,22 @@ def upsert_releases(platform: str, new_releases: list[dict[str, Any]]) -> list[d
     return added
 
 
+def get_last_run_date(platform: str) -> date | None:
+    from datetime import date
+    data = load_platform(platform)
+    raw = data.get("last_run_date")
+    if raw:
+        return date.fromisoformat(raw)
+    return None
+
+
+def set_last_run_date(platform: str, run_date: date) -> None:
+    from datetime import date
+    data = load_platform(platform)
+    data["last_run_date"] = run_date.isoformat()
+    save_platform(data)
+
+
 def get_unsummarised(platform: str) -> list[dict[str, Any]]:
     data = load_platform(platform)
     return [r for r in data["releases"] if r.get("summary") is None]

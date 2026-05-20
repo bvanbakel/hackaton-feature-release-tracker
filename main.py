@@ -1,5 +1,6 @@
 import argparse
 import logging
+import time
 from datetime import date, timedelta
 
 from src.config import load_config
@@ -9,7 +10,7 @@ from src.scrapers.bigquery import BigQueryScraper
 from src.scrapers.databricks import DatabricksScraper
 from src.scrapers.fabric import FabricScraper
 from src.scrapers.snowflake import SnowflakeScraper
-from src.storage import get_unsummarised, load_platform, upsert_releases
+from src.storage import get_last_run_date, get_unsummarised, load_platform, set_last_run_date, upsert_releases
 from src.summariser import ReleaseSummary, summarise_platform_releases
 
 logging.basicConfig(
@@ -31,13 +32,16 @@ def run_once() -> None:
     enabled = config.enabled_platforms()
     logger.info("Starting run — %d platform(s) enabled", len(enabled))
 
-    # Collect new releases since last run for each platform
-    since = _since_date()
+    today = date.today()
     platform_summaries: dict[str, ReleaseSummary | None | str] = {}
 
     for platform in enabled:
         name = platform.name
         logger.info("Processing %s", name)
+
+        # Use last_run_date if available, otherwise default to 14 days ago (first run)
+        since = get_last_run_date(name) or (today - timedelta(days=14))
+        logger.info("%s — looking back to %s", name, since)
 
         # 1. Scrape
         try:
@@ -65,7 +69,8 @@ def run_once() -> None:
             platform_summaries[name] = None
             continue
 
-        # 3. Summarise
+        # 3. Summarise (small delay to stay within per-minute rate limits)
+        time.sleep(3)
         try:
             summary = summarise_platform_releases(name, to_summarise, config)
             platform_summaries[name] = summary
@@ -76,20 +81,17 @@ def run_once() -> None:
     # 4. Deliver
     if not config.google_chat_webhook_url or "..." in config.google_chat_webhook_url:
         logger.warning("No webhook URL configured — printing digest to console instead")
-        _print_digest(platform_summaries, since)
+        _print_digest(platform_summaries, today)
         return
 
     try:
-        post_weekly_digest(platform_summaries, since, config)
+        post_weekly_digest(platform_summaries, today, config)
+        # Record successful run date so next run only fetches new releases
+        for platform in enabled:
+            set_last_run_date(platform.name, today)
     except Exception as e:
         logger.error("Delivery failed: %s", e)
-        _print_digest(platform_summaries, since)
-
-
-def _since_date() -> date:
-    """Return the start of the current ISO week (Monday)."""
-    today = date.today()
-    return today - timedelta(days=today.weekday())
+        _print_digest(platform_summaries, today)
 
 
 def _print_digest(

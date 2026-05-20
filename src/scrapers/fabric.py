@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 
 import httpx
 from bs4 import BeautifulSoup, Tag
@@ -47,7 +47,13 @@ class FabricScraper(BaseScraper):
                 continue
 
             key = dt.strftime("%Y-%m")
-            monthly_dates[key] = dt
+            # Use today's date for the current month so it's always picked up
+            # as "recent" by the weekly lookback window.
+            today = date.today()
+            if dt.year == today.year and dt.month == today.month:
+                monthly_dates[key] = datetime(today.year, today.month, today.day)
+            else:
+                monthly_dates[key] = dt
             monthly.setdefault(key, [])
             monthly[key].append(f"- {feature_name}: {description}")
 

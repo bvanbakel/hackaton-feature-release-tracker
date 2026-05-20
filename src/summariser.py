@@ -7,7 +7,7 @@ from typing import Any
 
 from google import genai
 from google.genai import types
-from google.genai.errors import ServerError
+from google.genai.errors import ClientError, ServerError
 from pydantic import BaseModel
 
 from src.config import AppConfig
@@ -59,7 +59,12 @@ def summarise_platform_releases(
 
 
 def _generate_with_retry(client: genai.Client, user_content: str, max_attempts: int = 4) -> Any:
-    """Call the Gemini API with simple exponential backoff on 503 errors."""
+    """Call the Gemini API with exponential backoff on transient errors.
+
+    - 503 (overloaded): retry up to max_attempts with backoff.
+    - 429 per-minute rate limit: wait the suggested retry-after then retry.
+    - 429 daily quota exhausted: raise immediately — no point retrying today.
+    """
     delay = 15
     for attempt in range(1, max_attempts + 1):
         try:
@@ -72,12 +77,29 @@ def _generate_with_retry(client: genai.Client, user_content: str, max_attempts: 
                     response_schema=ReleaseSummary,
                 ),
             )
-        except ServerError as e:
+        except ServerError:
+            # 503 — transient overload, retry with backoff
             if attempt == max_attempts:
                 raise
             logger.warning("Gemini 503 (attempt %d/%d) — retrying in %ds", attempt, max_attempts, delay)
             time.sleep(delay)
             delay *= 2
+        except ClientError as e:
+            if e.code == 429:
+                msg = str(e)
+                # Daily quota: don't retry, fail fast
+                if "PerDay" in msg:
+                    logger.error("Gemini daily quota exhausted — will retry on next run")
+                    raise
+                # Per-minute rate limit: wait the suggested delay then retry
+                if attempt == max_attempts:
+                    raise
+                wait = delay
+                logger.warning("Gemini rate limit (attempt %d/%d) — retrying in %ds", attempt, max_attempts, wait)
+                time.sleep(wait)
+                delay *= 2
+            else:
+                raise
 
 
 def _build_user_message(
