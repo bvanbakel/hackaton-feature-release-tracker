@@ -91,7 +91,7 @@ A tool that monitors release notes for major data engineering platforms and deli
 | Language | Python 3.11+ | User familiarity, rich ecosystem for scraping + LLM + automation |
 | Package manager | `uv` | Fast, modern Python package and project manager; replaces pip + venv |
 | Scraping | `httpx` + `BeautifulSoup4` | Lightweight, async-capable, well-supported |
-| LLM | Google Gemini API (`gemini-2.5-flash`) | Free tier, no credit card required, structured JSON output, sufficient quality for release summarisation |
+| LLM | Groq API (`llama-3.3-70b-versatile`) | Free tier, 14,400 req/day, no credit card required, JSON output, fast inference |
 | Local storage | JSON files (one per platform) | Simple, human-readable, easy to inspect and debug; straightforward migration to SQLite in v2 |
 | Scheduling | `APScheduler` or system cron | APScheduler keeps everything in one Python process; cron is simpler for local use |
 | Config | `python-dotenv` + `PyYAML` | Secrets in `.env`, non-secret config in `config.yaml` |

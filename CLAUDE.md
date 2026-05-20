@@ -39,13 +39,13 @@ main.py         — entry point
 | File | Purpose |
 |------|---------|
 | `config.yaml` | Platforms, schedule, backfill start date, max summary length |
-| `.env` | `GEMINI_API_KEY`, `GOOGLE_CHAT_WEBHOOK_URL` |
+| `.env` | `GROQ_API_KEY`, `GOOGLE_CHAT_WEBHOOK_URL` |
 | `.env.example` | Template committed to git |
 
 ## Key Constraints
 
 - **Idempotent**: re-running must never post duplicate messages or reprocess seen releases
-- **LLM**: summariser uses Google Gemini (`gemini-2.0-flash`) — free tier, no credit card required
+- **LLM**: summariser uses Groq (`llama-3.3-70b-versatile`) — free tier, 14,400 req/day, no credit card required
 - **Error handling**: if a platform scraper or API call fails, skip that platform and post a failure note — do not abort the full run
 - **Storage v1**: JSON files; logic layer must stay storage-agnostic for a future SQLite migration
 

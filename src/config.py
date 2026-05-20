@@ -34,7 +34,7 @@ class AppConfig:
     platforms: dict[str, PlatformConfig]
     schedule: ScheduleConfig
     summary: SummaryConfig
-    gemini_api_key: str
+    groq_api_key: str
     google_chat_webhook_url: str
 
     def enabled_platforms(self) -> list[PlatformConfig]:
@@ -53,13 +53,13 @@ def load_config(config_path: Path | None = None, env_path: Path | None = None) -
         for name, cfg in raw["platforms"].items()
     }
 
-    gemini_api_key = os.environ.get("GEMINI_API_KEY", "")
+    groq_api_key = os.environ.get("GROQ_API_KEY", "")
     webhook_url = os.environ.get("GOOGLE_CHAT_WEBHOOK_URL", "")
 
     return AppConfig(
         platforms=platforms,
         schedule=ScheduleConfig(**raw["schedule"]),
         summary=SummaryConfig(**raw["summary"]),
-        gemini_api_key=gemini_api_key,
+        groq_api_key=groq_api_key,
         google_chat_webhook_url=webhook_url,
     )
